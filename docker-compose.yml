@@ -1,0 +1,57 @@
+#Traduction des différentes options retrouvé dans les docker run en Yammel pour faire un docker-compose.yml
+
+---
+version: '3.4'
+
+
+#Pour "web" on retrouve :
+#   -Nom de l'image utilisé dans le conteneur
+#   -Confirmation du port utilisé
+#   -Entrer dans le réseau "dvwa-net"
+#     -Attribution d'une adresse IP
+#   -Un volume copiant la configuration DVWA dans le conteneur
+
+services:
+  web:
+    image: lange/web
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      dvwa-net:
+        ipv4_address: 10.10.1.2
+    volumes: 
+      - ./DVWA/:/var/www/localhost/htdocs/dvwa/
+
+
+#Dans l'ordre des options on fait pour "bdd" :
+#   -Nom de l'image utilisé dans le conteneur
+#   -Un hostname
+#   -Passage d'un mot de passe et création d'une bdd
+#   -Confirmation du port utilisé
+#   -Entrer dans le réseau "dvwa-net"
+#   -Attribution d'une adresse IP
+
+
+  bdd:
+    image: lange/bdd
+    hostname: bdd
+    environment:
+      MYSQL_ROOT_PASSWORD: p@ssw0rd
+      MYSQL_DATABASE: dvwa
+      DB_PORT: 3306
+      MYSQL_PASSWORD: p@ssw0rd
+    restart: always
+    networks:
+      dvwa-net:
+        ipv4_address: 10.10.1.1
+
+
+#Création d'un réseau utilisé par les deux conteneurs Docker
+#permettant d'assurer la communication entre les deux, et leur donner une adresse IP
+networks:
+  dvwa-net:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.10.0.0/16
